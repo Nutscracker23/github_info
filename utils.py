@@ -54,12 +54,17 @@ def datetime_type(string: str):
 
 def check_rate_limit(response: HTTPResponse):
     remaining_header = response.getheader('X-RateLimit-Remaining')
-    print(remaining_header)
-
-    if not remaining_header:
+    if remaining_header == 0:
         reset_header = response.getheader('X-RateLimit-Reset')
+        print('X-RateLimit-Reset', reset_header)
         now = time.time()
         time.sleep(int(reset_header) - now + 1)
+        return
+
+    retry_after = response.getheader('retry-after')
+    if retry_after:
+        time.sleep(int(retry_after) + 1)
+        return
 
 
 def parse_link(header: str) -> dict:

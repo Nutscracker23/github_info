@@ -41,9 +41,9 @@ class MainProcess(object):
         self.start_date = start_date
         self.end_date = end_date
 
-        self.commits_store = CommitsStore()
-        self.pulls_store = PullsStore()
-        self.issues_store = IssuesStore()
+        self.commits_store = CommitsStore(start_date, end_date)
+        self.pulls_store = PullsStore(start_date, end_date)
+        self.issues_store = IssuesStore(start_date, end_date)
 
     def run(self):
         self.get_commits()
@@ -60,15 +60,17 @@ class MainProcess(object):
         query = urlencode(query_dict)
         connection = self.connection.clone_with_request(path, query)
         response = connection.getresponse()
+        if response.status == 403:
+            check_rate_limit(response)
+            return self.get_data(store, path, **kwargs)
         getattr(self, store).add_data(json.loads(response.read()))
-        check_rate_limit(response)
         return response
 
     def get_data_pool(self, request_data: dict, parsed_link_last: dict):
         last_page = int(parsed_link_last.get('page', 2))
         request_data['path'] = parsed_link_last.get('path')
         map_args = [{'page': page, **request_data} for page in range(2, last_page + 1)]
-        pool = Pool(processes=4)
+        pool = Pool()
         pool.map(self.get_data_start, map_args)
         pool.close()
         pool.join()
@@ -117,8 +119,7 @@ class MainProcess(object):
             'store': 'issues_store',
             'path': request_path,
         }
-        self.get_data_by_state(request_data, 'open')
-        self.get_data_by_state(request_data, 'closed')
+        self.get_data_by_state(request_data, 'all')
 
     def get_pulls(self):
         request_path = '/repos/{owner}/{repo}/pulls'.format(
@@ -130,5 +131,4 @@ class MainProcess(object):
             'path': request_path,
             'head': self.branch,
         }
-        self.get_data_by_state(request_data, 'open')
-        self.get_data_by_state(request_data, 'closed')
+        self.get_data_by_state(request_data, 'all')
