@@ -26,21 +26,29 @@ class Connection(object):
             connection.set_debuglevel(1)
         return connection
 
-    def clone_with_request(self, path: str, query: str = '') -> HTTPSConnection:
+    def get_response(self, path: str = '', **kwargs):
+        query_dict = {'per_page': 100, **kwargs}
+        query = urlencode(query_dict)
+
         connection = self.clone()
         connection.request('GET', '{}?{}'.format(path, query), headers=self.headers)
-        return connection
+        response = connection.getresponse()
+
+        if response.status == 403:
+            check_rate_limit(response)
+            return self.get_response(path, **kwargs)
+        return response
 
 
 class MainProcess(object):
     def __init__(self, owner: str, repo: str, branch: str, start_date: str, end_date: str):
-        self.connection = Connection()
         self.owner = owner
         self.repo = repo
         self.branch = branch
         self.start_date = start_date
         self.end_date = end_date
 
+        self.connection = Connection()
         self.commits_store = CommitsStore(start_date, end_date)
         self.pulls_store = PullsStore(start_date, end_date)
         self.issues_store = IssuesStore(start_date, end_date)
@@ -56,13 +64,7 @@ class MainProcess(object):
         self.pulls_store.print_data()
 
     def get_data(self, store: str, path: str = '', **kwargs) -> HTTPResponse:
-        query_dict = {'per_page': 100, **kwargs}
-        query = urlencode(query_dict)
-        connection = self.connection.clone_with_request(path, query)
-        response = connection.getresponse()
-        if response.status == 403:
-            check_rate_limit(response)
-            return self.get_data(store, path, **kwargs)
+        response = self.connection.get_response(path, **kwargs)
         getattr(self, store).add_data(json.loads(response.read()))
         return response
 
