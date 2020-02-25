@@ -1,0 +1,21 @@
+name: CI
+
+on:
+ push:
+   branches:
+     - master
+
+jobs:
+  push:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: Run process
+        env:
+          AUTH_TOKEN: ${{ secrets.PYTHON_AUTH_TOKEN }}
+        run: python main.py --url github.com/${{ github.repository }}
