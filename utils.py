@@ -27,7 +27,7 @@ def get_arguments() -> dict:
 def url_type(string: str) -> dict:
     if not string:
         raise argparse.ArgumentTypeError("Set url")
-    regex = r"github.com/(?P<owner>[\d\w]+)/(?P<repo>[\d\w]+)[/]?$"
+    regex = r"github.com/(?P<owner>[\d\w]+)/(?P<repo>[\d\w]+)([/]|.git)?$"
     pattern = re.compile(regex)
     search_result = pattern.search(string)
 

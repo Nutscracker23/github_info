@@ -1,4 +1,4 @@
-from connection import MainProcess
+from main_process import MainProcess
 from utils import get_arguments
 
 
