@@ -32,7 +32,9 @@ class MainProcess(object):
 
     def get_data(self, store: str, path: str = '', **kwargs) -> HTTPResponse:
         response = self.connection.get_response(path, **kwargs)
-        getattr(self, store).add_data(json.loads(response.read()))
+        data = response.read()
+        if data:
+            getattr(self, store).add_data(json.loads(data))
         return response
 
     def get_data_pool(self, request_data: dict, parsed_link_last: dict):
@@ -40,7 +42,7 @@ class MainProcess(object):
         request_data['path'] = parsed_link_last.get('path')
         map_args = [{'page': page, **request_data} for page in range(2, last_page + 1)]
         pool = Pool()
-        pool.map(self.get_data_start, map_args)
+        pool.imap(self.get_data_start, map_args)
         pool.close()
         pool.join()
 
