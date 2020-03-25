@@ -39,10 +39,10 @@ class CommitsStore(BaseStore):
     def print_data(self):
         authors = sorted(self.data.items(), key=lambda x: x[1], reverse=True)
         print("Commits stats".center(30, '-'))
-        print("Total count: ", self.count)
         print("#  ", "Count:", "Username:")
         for i, author in enumerate(list(authors[:30]), 1):
             print(str(i).ljust(3), str(author[1]).ljust(6), author[0])
+        print("Total count: ", self.count)
         print('\r')
 
 
@@ -70,10 +70,10 @@ class PullsStore(BaseStore):
 
     def print_data(self):
         print("Pull Requests stats".center(30, '-'))
-        print("Total count: ", self.count)
         print("Status:".ljust(15), "Count:")
         for pull in self.data.items():
             print(pull[0].ljust(15), pull[1])
+        print("Total count: ", self.count)
         print('\r')
 
 
@@ -105,8 +105,8 @@ class IssuesStore(BaseStore):
     def print_data(self):
         issues = self.parse_data()
         print("Issues stats".center(30, '-'))
-        print("Total count: ", self.count)
         print("Status:".ljust(15), "Count:")
         for issue in issues.items():
             print(issue[0].ljust(15), issue[1])
+        print("Total count: ", self.count)
         print('\r')
