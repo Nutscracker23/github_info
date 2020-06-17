@@ -1,4 +1,5 @@
 import argparse
+import os
 import re
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
@@ -65,3 +66,10 @@ def parse_link(header: str) -> dict:
             }
 
     return result
+
+
+def parse_token():
+    auth_token = os.getenv('AUTH_TOKEN')
+    if not auth_token:
+        raise EnvironmentError('AUTH_TOKEN not found')
+    return auth_token

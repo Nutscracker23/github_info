@@ -42,7 +42,7 @@ class CommitsStore(BaseStore):
         print("#  ", "Count:", "Username:")
         for i, author in enumerate(list(authors[:30]), 1):
             print(str(i).ljust(3), str(author[1]).ljust(6), author[0])
-        print("Total count: ", self.count)
+        print("Total count:", self.count)
         print('\r')
 
 
